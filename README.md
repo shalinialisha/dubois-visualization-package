@@ -1,5 +1,5 @@
-# dubois-visualization-package
-Python package that allows you to use W. E. B Dubois' revolutionary data visualizations 
+# dubois-viz
+Create matplotlib visualizations inspired by W.E.B. Du Bois' revolutionary data portraits from the 1900 Paris Exposition.
 
 ## Historical Context
 
@@ -16,14 +16,14 @@ This package helps you create matplotlib visualizations that capture the spirit 
 ## Installation
 
 ```bash
-pip install dubois-visualization-package
+pip install dubois-viz
 ```
 
 Or install from source:
 
 ```bash
-git clone https://github.com/shalinialisha/dubois-visualization-package.git
-cd dubois-visualization-package
+git clone https://github.com/shalinialisha/dubois-viz.git
+cd dubois-viz
 pip install -e .
 ```
 
@@ -140,6 +140,178 @@ show_palette('diverging')
 show_palette('primary', save_path='dubois_primary.png')
 ```
 
+### Chart Types
+
+Specialized chart types that recreate Du Bois' signature visualization styles:
+
+#### Bar Charts
+
+```python
+from dubois.charts import bar
+
+# Simple horizontal bar chart
+fig, ax = bar.bar(
+    ['Agriculture', 'Domestic', 'Manufacturing', 'Professions'],
+    [62, 28, 5, 5],
+    title='Occupations of Georgia Negroes',
+    label_format='{:.0f}%',
+)
+
+# Grouped bar chart (compare across time periods)
+fig, ax = bar.grouped_bar(
+    ['Agriculture', 'Manufacturing', 'Professions'],
+    {'1890': [62, 5, 3], '1900': [55, 8, 5]},
+    title='Occupations Over Time',
+)
+
+# Stacked bar chart
+fig, ax = bar.stacked_bar(
+    ['Georgia', 'Virginia', 'Mississippi'],
+    {'City': [16, 18, 6], 'Rural': [84, 82, 94]},
+    title='City and Rural Population',
+)
+```
+
+#### Area Charts
+
+```python
+from dubois.charts import area
+
+# Proportional area chart (Du Bois' "Freemen and Slaves" style)
+fig, ax = area.proportional_area(
+    [1790, 1800, 1810, 1820, 1830, 1840, 1850, 1860, 1870],
+    {'Slaves': [92, 89, 86, 87, 86, 87, 88, 89, 0],
+     'Free': [8, 11, 14, 13, 14, 13, 12, 11, 100]},
+    title='Proportion of Freemen and Slaves',
+    annotations={1865: 'Emancipation'},
+)
+```
+
+#### Butterfly (Mirror) Charts
+
+```python
+from dubois.charts import butterfly
+
+# Back-to-back comparison chart
+fig, ax = butterfly.butterfly(
+    ['Under 10', '10-20', '20-30', '30-40', '40-50', '50+'],
+    [18, 20, 17, 14, 12, 19],
+    [16, 18, 19, 15, 13, 19],
+    left_label='Negroes', right_label='Whites',
+    title='Comparative Age Distribution',
+)
+
+# Dot comparison chart
+fig, ax = butterfly.comparison(
+    ['Literacy', 'Land Ownership', 'Business'],
+    [30, 12, 2],
+    [57, 21, 5],
+    label_a='1880', label_b='1900',
+    title='Negro Progress Since Emancipation',
+)
+```
+
+#### Spiral Charts (Plate 11 Style)
+
+```python
+from dubois.charts import spiral
+
+# Iconic Du Bois spiral chart
+fig, ax = spiral.spiral(
+    ['Georgia', 'Virginia', 'Mississippi', 'S. Carolina',
+     'Alabama', 'Louisiana', 'N. Carolina', 'Tennessee'],
+    [16, 18, 6, 8, 10, 22, 7, 15],
+    label_a='City', label_b='Rural',
+    title='City and Rural Population 1890',
+)
+
+# Concentric rings (progress indicators)
+fig, ax = spiral.concentric_rings(
+    ['Literacy', 'School Enrollment', 'Land Ownership', 'Business'],
+    [57, 54, 21, 5],
+    title='Negro Progress Indicators, 1900',
+)
+```
+
+#### Wrapped (Snake) Bar Charts
+
+```python
+from dubois.charts import wrapped
+
+# Circular wrapped bar chart
+fig, ax = wrapped.wrapped_bar(
+    ['Agriculture', 'Domestic', 'Manufacturing', 'Trade', 'Professions'],
+    [62, 28, 5, 4, 1],
+    title='Occupations of Georgia Negroes',
+)
+
+# Snake bar (horizontal stacked rows)
+fig, ax = wrapped.snake_bar(
+    ['Georgia', 'Virginia', 'Mississippi'],
+    {'City': [16, 18, 6], 'Rural': [84, 82, 94]},
+    title='City and Rural Population',
+)
+```
+
+#### Pictorial (Icon Grid) Charts
+
+```python
+from dubois.charts import pictorial
+
+# Waffle-style icon grid (each cell = 1%)
+fig, ax = pictorial.icon_grid(
+    {'Illiterate': 44, 'Literate': 56},
+    title='Illiteracy Among American Negroes, 1900',
+)
+
+# Single-row proportional strip
+fig, ax = pictorial.pictograph_row(
+    {'Black': 80, 'Mulatto': 15, 'Other': 5},
+    title='Racial Composition',
+)
+```
+
+### Typography Utilities
+
+```python
+from dubois import typography
+
+# Hierarchical title block
+typography.title_block(ax,
+    'City and Rural Population',
+    subtitle='Among American Negroes in the Former Slave States',
+    caption='Done by Atlanta University, 1900')
+
+# Du Bois-style annotation with arrow and box
+typography.annotate(ax, 'Emancipation', xy=(1865, 50))
+
+# Source attribution
+typography.source_note(ax, 'Source: United States Census Bureau')
+
+# Plate number label
+typography.plate_number(ax, 11)
+```
+
+### Multi-Panel Layouts
+
+```python
+from dubois.layouts import DuBoisPlate
+
+# Create a multi-panel plate
+plate = DuBoisPlate(2, 2,
+    title='The Georgia Negro: A Social Study',
+    subtitle='Prepared for the Paris Exposition of 1900',
+    plate_number=42)
+
+ax1 = plate.get_axes(0, 0)  # Top-left panel
+ax2 = plate.get_axes(0, 1)  # Top-right panel
+ax3 = plate.get_axes(1, 0, colspan=2)  # Full-width bottom
+
+# Draw on each axes, then save
+plate.save('my_plate.png')
+plate.close()
+```
+
 ## Design Principles
 
 When creating Du Bois-inspired visualizations:
@@ -158,11 +330,25 @@ When creating Du Bois-inspired visualizations:
 
 ## Examples
 
-See the `examples/` directory for recreations of specific Du Bois plates:
+See the `examples/` directory for complete working examples:
 
+- `examples/basic_usage.py` - Color palettes, themes, and simple matplotlib charts
+- `examples/chart_examples.py` - Bar, area, butterfly, and spiral charts
+- `examples/phase3_examples.py` - Wrapped bars, pictorial charts, typography, multi-panel layouts
+
+Chart examples include recreations inspired by:
 - Plate 11: City and Rural Population (spiral chart)
-- Plate 27: Occupations (butterfly chart)
-- Plate 51: Proportion of Freemen and Slaves (stacked area)
+- Plate 25: Comparative Age Distribution (butterfly chart)
+- Plate 31: Proportion of Freemen and Slaves (proportional area chart)
+- Plate 27: Occupations of Georgia Negroes (bar, wrapped bar)
+- Pictorial grids showing illiteracy and population composition
+
+```bash
+# Generate all examples
+python examples/basic_usage.py
+python examples/chart_examples.py
+python examples/phase3_examples.py
+```
 
 ## References
 
@@ -195,11 +381,11 @@ See the `examples/` directory for recreations of specific Du Bois plates:
 If you use this package in academic work, please cite:
 
 ```bibtex
-@software{dubois-visualization-package,
-  title = {dubois-visualization-package: Data Visualization in the Style of W.E.B. Du Bois},
+@software{dubois-viz,
+  title = {dubois-viz: Data Visualization in the Style of W.E.B. Du Bois},
   author = {Shalini Thinakaran},
   year = {2026},
-  url = {https://github.com/shalinialisha/dubois-visualization-package}
+  url = {https://github.com/shalinialisha/dubois-viz}
 }
 ```
 

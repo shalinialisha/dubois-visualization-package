@@ -208,6 +208,8 @@ def get_sequential(color: str = 'crimson', n: int = None) -> List[str]:
         return seq
     elif n <= 0:
         raise ValueError("n must be positive")
+    elif n == 1:
+        return [seq[len(seq) // 2]]
     elif n <= len(seq):
         # Return evenly spaced colors from the sequence
         indices = [int(i * (len(seq) - 1) / (n - 1)) for i in range(n)]
@@ -278,10 +280,13 @@ def get_diverging(n: int = 7) -> List[str]:
     if n <= 0:
         raise ValueError("n must be positive")
     elif n % 2 == 0:
-        print(f"Warning: Diverging palettes work best with odd numbers. Adding 1 to n={n}")
+        import warnings
+        warnings.warn(f"Diverging palettes work best with odd numbers. Adding 1 to n={n}")
         n += 1
-    
-    if n <= len(DUBOIS_DIVERGING):
+
+    if n == 1:
+        return [DUBOIS_DIVERGING[len(DUBOIS_DIVERGING) // 2]]
+    elif n <= len(DUBOIS_DIVERGING):
         indices = [int(i * (len(DUBOIS_DIVERGING) - 1) / (n - 1)) for i in range(n)]
         return [DUBOIS_DIVERGING[i] for i in indices]
     else:

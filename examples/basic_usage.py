@@ -10,6 +10,9 @@ import os
 # Add parent directory to path for local development
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'output')
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
 import dubois
 import matplotlib.pyplot as plt
 import numpy as np
@@ -45,7 +48,7 @@ def example_1_simple_bars():
         ax.text(val + 1, i, f'{val}%', va='center', fontsize=10)
     
     plt.tight_layout()
-    plt.savefig('examples/example_1_bars.png', dpi=150, facecolor='#F5F5DC')
+    plt.savefig(f'{OUTPUT_DIR}/example_1_bars.png', dpi=150, facecolor='#F5F5DC')
     print("  Saved to examples/example_1_bars.png")
     plt.close()
 
@@ -99,7 +102,7 @@ def example_3_sequential_data():
     ax.grid(True, axis='y', alpha=0.3)
     
     plt.tight_layout()
-    plt.savefig('examples/example_3_line.png', dpi=150)
+    plt.savefig(f'{OUTPUT_DIR}/example_3_line.png', dpi=150)
     print("  Saved to examples/example_3_line.png")
     plt.close()
 
@@ -144,7 +147,7 @@ def example_4_stacked_area():
             ha='center', fontsize=9, style='italic')
     
     plt.tight_layout()
-    plt.savefig('examples/example_4_stacked.png', dpi=150, facecolor='#F5F5DC')
+    plt.savefig(f'{OUTPUT_DIR}/example_4_stacked.png', dpi=150, facecolor='#F5F5DC')
     print("  Saved to examples/example_4_stacked.png")
     plt.close()
 
@@ -183,7 +186,7 @@ def example_5_multiple_series():
     ax.grid(True, alpha=0.3)
     
     plt.tight_layout()
-    plt.savefig('examples/example_5_multiple.png', dpi=150)
+    plt.savefig(f'{OUTPUT_DIR}/example_5_multiple.png', dpi=150)
     print("  Saved to examples/example_5_multiple.png")
     plt.close()
 
@@ -209,7 +212,7 @@ def example_6_context_manager():
         ax2.grid(True)
     
     plt.tight_layout()
-    plt.savefig('examples/example_6_context.png', dpi=150)
+    plt.savefig(f'{OUTPUT_DIR}/example_6_context.png', dpi=150)
     print("  Saved to examples/example_6_context.png")
     plt.close()
 

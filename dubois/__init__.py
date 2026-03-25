@@ -1,6 +1,6 @@
 """
-dubois-viz: W.E.B. Du Bois Data Visualization Package
-=====================================================
+dubois-viz: W.E.B. Du Bois-Inspired Data Visualizations
+========================================================
 
 A Python package for creating data visualizations inspired by W.E.B. Du Bois'
 groundbreaking data portraits from the 1900 Paris Exposition.
@@ -38,13 +38,15 @@ More information:
 - #DuBoisChallenge: https://github.com/ajstarks/dubois-data-portraits
 """
 
-__version__ = '0.1.0'
-__author__ = 'Your Name'
-__email__ = 'your.email@example.com'
+__version__ = '1.0.0'
+__author__ = 'Shalini Thinakaran'
 
 # Import main modules
 from dubois import colors
 from dubois import themes
+from dubois import charts
+from dubois import typography
+from dubois import layouts
 
 # Import key functions for convenience
 from dubois.themes import set_theme, reset_theme, list_themes
@@ -62,6 +64,9 @@ __all__ = [
     # Modules
     'colors',
     'themes',
+    'charts',
+    'typography',
+    'layouts',
     # Key functions
     'set_theme',
     'reset_theme',

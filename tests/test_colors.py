@@ -63,12 +63,15 @@ class TestColorPalettes:
         div = colors.get_diverging(7)
         assert len(div) == 7
     
-    def test_get_diverging_even_warning(self, capsys):
+    def test_get_diverging_even_warning(self):
         """Test warning for even number in diverging palette"""
-        div = colors.get_diverging(6)
-        assert len(div) == 7  # Should be incremented to 7
-        captured = capsys.readouterr()
-        assert 'Warning' in captured.out
+        import warnings
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            div = colors.get_diverging(6)
+            assert len(div) == 7  # Should be incremented to 7
+            assert len(w) == 1
+            assert 'odd' in str(w[0].message).lower()
 
 
 class TestColorConversion:
