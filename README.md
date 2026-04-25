@@ -1,5 +1,78 @@
-# dubois-visualization
-Create matplotlib visualizations inspired by W.E.B. Du Bois' revolutionary data portraits from the 1900 Paris Exposition.
+# dubois-viz
+
+**Bring your data to life with the bold, hand-painted style of W.E.B. Du Bois' 1900 Paris Exposition charts.**
+
+![Five sectors of the U.S. economy from 1900 to 1960, in deep crimson, gold, green, blue, and pink](docs/images/gallery/area_5_groups.png)
+
+Plug in your own numbers — sales, survey results, demographics, anything — and get back charts that look like Du Bois' originals: deep crimson, mustard gold, forest green, jet black. Every chart in this README was made from ordinary modern data, not the historical figures Du Bois used.
+
+> ⚠️ **This is still a work in progress.** Everything works and you can use it today, but a few charts still get a little messy with very long labels or unusual data shapes. The [open issues](https://github.com/shalinialisha/dubois-visualization-package/issues) list shows what's known and what's coming.
+
+---
+
+## What you can make
+
+### Bar charts — for ranking things
+
+A horizontal bar chart of company headcount by team:
+
+![Headcount by function — five teams ranked by size](docs/images/gallery/bar_long_labels.png)
+
+A stacked bar showing how browser market share has shifted year over year:
+
+![Browser market share over three years, stacked](docs/images/gallery/stacked_many_segments.png)
+
+### Area charts — for change over time
+
+How five sectors of the U.S. economy shifted from 1900 to 1960:
+
+![Five sectors of the economy across six decades](docs/images/gallery/area_5_groups.png)
+
+A proportional view (always summing to 100%) of where revenue comes from across six years:
+
+![Revenue mix as percentages over time](docs/images/gallery/area_proportional_long_names.png)
+
+### Butterfly charts — for comparing two sides
+
+Education levels in the 2010 vs. 2020 U.S. Census, mirrored across a center line:
+
+![Education levels compared between two censuses](docs/images/gallery/butterfly_long_labels.png)
+
+Junior vs. senior salary across departments, shown as paired dots connected by a line:
+
+![Junior vs senior salary by department](docs/images/gallery/butterfly_comparison.png)
+
+### Spiral and ring charts — Du Bois' signature style
+
+Urban vs. suburban share across five U.S. metro areas, on concentric rings:
+
+![Urban vs suburban share across five metros, on concentric rings](docs/images/gallery/spiral_long_names.png)
+
+A dashboard of five business KPIs, each ring filled to its current value:
+
+![Five business KPIs as concentric filled rings](docs/images/gallery/spiral_concentric.png)
+
+### Wrapped charts — for compact proportional layouts
+
+Four industries laid out as a single bar that spirals inward:
+
+![Four industries on a wrapped spiral bar](docs/images/gallery/wrapped_long_names.png)
+
+Six U.S. states broken down by urban / suburban / rural population, one row each:
+
+![Six states as urban-suburban-rural rows](docs/images/gallery/wrapped_snake.png)
+
+### Pictograph charts — for proportions you can count
+
+Smartphone market share as a 10×10 grid of squares — every cell is one percent:
+
+![Smartphone market share as a 100-cell grid](docs/images/gallery/pictorial_grid_8groups.png)
+
+A 7-point survey scale (Excellent → Very Poor) shown as a single proportional strip:
+
+![Likert scale results as one proportional strip](docs/images/gallery/pictorial_row_7segs.png)
+
+---
 
 ## Historical Context
 
@@ -25,6 +98,15 @@ Or install from source:
 git clone https://github.com/shalinialisha/dubois-viz.git
 cd dubois-viz
 pip install -e .
+```
+
+**Requirements:** Python 3.9+, `matplotlib >= 3.5`, `numpy >= 1.20`.
+
+To run the test suite or build the docs, install the optional extras:
+
+```bash
+pip install -e ".[dev]"   # pytest, pytest-cov, black, ruff
+pytest tests/             # 95 tests
 ```
 
 ## Quick Start
@@ -330,11 +412,21 @@ When creating Du Bois-inspired visualizations:
 
 ## Examples
 
-See the `examples/` directory for complete working examples:
+See the `examples/` directory for complete working examples. Each script writes its
+output PNGs into `examples/output/` (created on first run, ignored by git).
 
-- `examples/basic_usage.py` - Color palettes, themes, and simple matplotlib charts
-- `examples/chart_examples.py` - Bar, area, butterfly, and spiral charts
-- `examples/phase3_examples.py` - Wrapped bars, pictorial charts, typography, multi-panel layouts
+**Walkthroughs** — read these to learn the API:
+
+- `examples/basic_usage.py` — Color palettes, themes, and simple matplotlib charts
+- `examples/chart_examples.py` — Bar, area, butterfly, and spiral charts
+- `examples/phase3_examples.py` — Wrapped bars, pictorial charts, typography, multi-panel layouts
+- `examples/gallery.py` — Recreations of specific Du Bois plates (11, 25, 27, 31, …)
+
+**Try-it scripts** — exercise every chart type end-to-end:
+
+- `examples/try_your_data.py` — Plug in your own data and regenerate every chart
+- `examples/test_with_real_data.py` — Runs every chart against the TidyTuesday Du Bois CSVs in `examples/data/`
+- `examples/test_random_data.py` — Runs every chart against randomly generated data
 
 Chart examples include recreations inspired by:
 - Plate 11: City and Rural Population (spiral chart)
@@ -344,10 +436,14 @@ Chart examples include recreations inspired by:
 - Pictorial grids showing illiteracy and population composition
 
 ```bash
-# Generate all examples
+# Generate the walkthrough examples
 python examples/basic_usage.py
 python examples/chart_examples.py
 python examples/phase3_examples.py
+python examples/gallery.py
+
+# Or exercise every chart type at once
+python examples/test_with_real_data.py
 ```
 
 ## References

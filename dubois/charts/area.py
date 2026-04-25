@@ -78,7 +78,8 @@ def area(x: List[Union[int, float, str]],
     if figsize is None:
         figsize = (12, 7)
 
-    if ax is None:
+    created_fig = ax is None
+    if created_fig:
         fig, ax = plt.subplots(figsize=figsize)
     else:
         fig = ax.figure
@@ -194,7 +195,8 @@ def area(x: List[Union[int, float, str]],
     if not show_labels:
         ax.legend(frameon=True, edgecolor='black', fancybox=False, fontsize=11)
 
-    plt.tight_layout()
+    if created_fig:
+        plt.tight_layout()
     return fig, ax
 
 
