@@ -1,4 +1,4 @@
-# dubois-viz
+# dubois-visualization
 Create matplotlib visualizations inspired by W.E.B. Du Bois' revolutionary data portraits from the 1900 Paris Exposition.
 
 ## Historical Context
