@@ -25,6 +25,16 @@ from typing import List, Optional, Tuple, Union
 from dubois import colors as dubois_colors
 
 
+def _project_to_circle(px: float, py: float, r: float) -> Tuple[float, float]:
+    """Return the point on the circle of radius r (origin-centered) that lies
+    on the ray from origin toward (px, py). Used to anchor leader lines to
+    each ring's outer edge so they don't all converge to a single point."""
+    dist = np.hypot(px, py)
+    if dist == 0:
+        return (-r, 0.0)
+    return (r * px / dist, r * py / dist)
+
+
 def spiral(categories: List[str],
            values_a: List[float],
            values_b: Optional[List[float]] = None,
@@ -93,10 +103,12 @@ def spiral(categories: List[str],
     if figsize is None:
         figsize = (10, 10)
 
-    if ax is None:
+    created_fig = ax is None
+    if created_fig:
         fig, ax = plt.subplots(figsize=figsize, subplot_kw={'aspect': 'equal'})
     else:
         fig = ax.figure
+        ax.set_aspect('equal')
 
     vals_a = np.array(values_a, dtype=float)
 
@@ -143,17 +155,31 @@ def spiral(categories: List[str],
                         linewidth=1.0)
         ax.add_patch(wedge_b)
 
-        # Percentage label at the midpoint of segment A
+        # Percentage label near the END of segment A, inset from the boundary.
+        # Placing labels at the segment end (rather than midpoint) gives each
+        # ring a unique angular position based on its value, so similar values
+        # across adjacent rings don't collide visually.
         pct_text = f'{frac * 100:.0f}%'
-        label_angle_deg = 90 - angle_a / 2
         label_r = radius - eff_ring_width / 2
-        label_x = label_r * np.cos(np.radians(label_angle_deg))
-        label_y = label_r * np.sin(np.radians(label_angle_deg))
-
         if angle_a > 20:
+            # Inside the wedge, just past the boundary
+            inset_deg = min(angle_a * 0.15, 6)
+            label_angle_deg = 90 - angle_a + inset_deg
+            label_x = label_r * np.cos(np.radians(label_angle_deg))
+            label_y = label_r * np.sin(np.radians(label_angle_deg))
             ax.text(label_x, label_y, pct_text,
-                    ha='center', va='center', fontsize=10,
+                    ha='center', va='center', fontsize=9,
                     fontweight='bold', color='white',
+                    fontfamily='serif')
+        elif angle_a > 0:
+            # Narrow wedge: place label just OUTSIDE the ring at the boundary
+            label_angle_deg = 90 - angle_a
+            outer_r = radius + 0.03
+            label_x = outer_r * np.cos(np.radians(label_angle_deg))
+            label_y = outer_r * np.sin(np.radians(label_angle_deg))
+            ax.text(label_x, label_y, pct_text,
+                    ha='left', va='center', fontsize=8,
+                    fontweight='bold', color='black',
                     fontfamily='serif')
 
     # Category labels on the left side, with connector lines to each ring
@@ -172,29 +198,30 @@ def spiral(categories: List[str],
     total_label_height = (n_rendered - 1) * label_spacing
     label_top = total_label_height / 2
 
-    # Estimate label margin from longest category name
+    # Anchor leaders close to the rings so radial projection produces a
+    # distinct point on every ring even with long names. Long text simply
+    # extends further left of the anchor; xlim is widened to fit it.
     max_label_len = max(len(c) for c in categories[:n_rendered]) if n_rendered > 0 else 5
-    label_margin = max(0.8, max_label_len * 0.08)
-    label_x_base = -start_radius - label_margin
+    label_x_base = -start_radius - 0.4
+    text_left_extent = max_label_len * 0.08 + 0.2
 
     for idx, (i, radius) in enumerate(rendered_rings):
         label_y = label_top - idx * label_spacing
 
-        # Connect to the actual left edge of the ring (at 180 degrees)
-        ring_left_x = -radius + eff_ring_width / 2
-        ring_y = 0.0  # rings are centered at origin, left edge is at y=0
+        # Project the label point radially onto the ring's outer edge so each
+        # leader line terminates on its own ring without crossing others.
+        anchor_x, anchor_y = _project_to_circle(label_x_base, label_y, radius)
 
         ax.text(label_x_base - 0.05, label_y, categories[i],
                 ha='right', va='center', fontsize=11,
                 fontweight='bold', fontfamily='serif')
-        # Draw connector line from label to the ring's left edge
-        ax.plot([label_x_base, ring_left_x], [label_y, ring_y],
+        ax.plot([label_x_base, anchor_x], [label_y, anchor_y],
                 color='#999999', linewidth=0.6, linestyle='-',
                 clip_on=False)
 
     # Set limits with room for labels
     margin = 0.2
-    ax.set_xlim(label_x_base - 0.1, start_radius + margin)
+    ax.set_xlim(label_x_base - text_left_extent, start_radius + margin)
     ax.set_ylim(-start_radius - margin, start_radius + margin)
     ax.axis('off')
 
@@ -218,7 +245,8 @@ def spiral(categories: List[str],
               frameon=True, edgecolor='black', fancybox=False,
               fontsize=11)
 
-    plt.tight_layout()
+    if created_fig:
+        plt.tight_layout()
     return fig, ax
 
 
@@ -289,10 +317,12 @@ def concentric_rings(categories: List[str],
     if figsize is None:
         figsize = (10, 10)
 
-    if ax is None:
+    created_fig = ax is None
+    if created_fig:
         fig, ax = plt.subplots(figsize=figsize, subplot_kw={'aspect': 'equal'})
     else:
         fig = ax.figure
+        ax.set_aspect('equal')
 
     # Auto-scale ring dimensions to fit all categories
     min_inner = 0.2
@@ -351,24 +381,23 @@ def concentric_rings(categories: List[str],
     label_top = total_label_height / 2
 
     max_label_len = max(len(c) for c in categories[:n_rendered]) if n_rendered > 0 else 5
-    label_margin = max(0.8, max_label_len * 0.08)
-    label_x_base = -start_radius - label_margin
+    label_x_base = -start_radius - 0.4
+    text_left_extent = max_label_len * 0.08 + 0.2
 
     for idx, (i, radius) in enumerate(rendered_rings):
         label_y = label_top - idx * label_spacing
 
-        ring_left_x = -radius + eff_ring_width / 2
-        ring_y = 0.0
+        anchor_x, anchor_y = _project_to_circle(label_x_base, label_y, radius)
 
         ax.text(label_x_base - 0.05, label_y, categories[i],
                 ha='right', va='center', fontsize=11,
                 fontweight='bold', fontfamily='serif')
-        ax.plot([label_x_base, ring_left_x], [label_y, ring_y],
+        ax.plot([label_x_base, anchor_x], [label_y, anchor_y],
                 color='#999999', linewidth=0.6, linestyle='-',
                 clip_on=False)
 
     margin = 0.2
-    ax.set_xlim(label_x_base - 0.1, start_radius + margin)
+    ax.set_xlim(label_x_base - text_left_extent, start_radius + margin)
     ax.set_ylim(-start_radius - margin, start_radius + margin)
     ax.axis('off')
 
@@ -380,5 +409,6 @@ def concentric_rings(categories: List[str],
                 ha='center', va='bottom', fontsize=11,
                 style='italic', fontfamily='serif')
 
-    plt.tight_layout()
+    if created_fig:
+        plt.tight_layout()
     return fig, ax

@@ -91,7 +91,8 @@ def butterfly(categories: List[str],
     if figsize is None:
         figsize = (12, max(5, n * 1.0))
 
-    if ax is None:
+    created_fig = ax is None
+    if created_fig:
         fig, ax = plt.subplots(figsize=figsize)
     else:
         fig = ax.figure
@@ -114,13 +115,13 @@ def butterfly(categories: List[str],
                          linewidth=line_width, label=right_label, **kwargs)
 
     # Set axis limits
+    left_max = max(left_arr) if len(left_arr) else 1
+    right_max = max(right_arr) if len(right_arr) else 1
     if symmetric:
-        max_val = max(max(left_arr), max(right_arr))
+        max_val = max(left_max, right_max)
         margin = max_val * 0.25
         ax.set_xlim(-max_val - margin, max_val + margin)
     else:
-        left_max = max(left_arr)
-        right_max = max(right_arr)
         margin_l = left_max * 0.25
         margin_r = right_max * 0.25
         max_val = max(left_max, right_max)
@@ -149,14 +150,25 @@ def butterfly(categories: List[str],
     ax.tick_params(axis='y', length=0, pad=45)
     ax.invert_yaxis()
 
+    # Reserve room above the topmost bar for the side labels — explicit ylim
+    # so this works in single-figure and multi-panel layouts identically.
+    ax.set_ylim(n - 0.5, -1.4)
+
     # Draw center line
     ax.axvline(x=0, color='#000000', linewidth=1.5)
 
-    # Side labels at top
-    ax.text(-max_val * 0.5, -0.8, left_label.upper(),
+    # Side labels above the topmost bar — anchor each to its own side's
+    # midpoint so an asymmetric chart still places them over the data.
+    if symmetric:
+        left_label_x = -max_val * 0.5
+        right_label_x = max_val * 0.5
+    else:
+        left_label_x = -left_max * 0.5
+        right_label_x = right_max * 0.5
+    ax.text(left_label_x, -0.9, left_label.upper(),
             ha='center', va='center', fontsize=13,
             fontweight='bold', color=left_color, fontfamily='serif')
-    ax.text(max_val * 0.5, -0.8, right_label.upper(),
+    ax.text(right_label_x, -0.9, right_label.upper(),
             ha='center', va='center', fontsize=13,
             fontweight='bold', color=right_color, fontfamily='serif')
 
@@ -174,7 +186,8 @@ def butterfly(categories: List[str],
     ax.tick_params(axis='x', length=0)
     ax.set_xticklabels([])
 
-    plt.tight_layout()
+    if created_fig:
+        plt.tight_layout()
     return fig, ax
 
 
@@ -187,6 +200,8 @@ def comparison(categories: List[str],
                color_b: Optional[str] = None,
                title: str = '',
                subtitle: str = '',
+               value_labels: bool = True,
+               label_format: str = '{:.0f}',
                figsize: Optional[Tuple[float, float]] = None,
                ax: Optional[plt.Axes] = None,
                **kwargs) -> Tuple[plt.Figure, plt.Axes]:
@@ -237,7 +252,8 @@ def comparison(categories: List[str],
     if figsize is None:
         figsize = (10, max(5, n * 1.0 + 1))
 
-    if ax is None:
+    created_fig = ax is None
+    if created_fig:
         fig, ax = plt.subplots(figsize=figsize)
     else:
         fig = ax.figure
@@ -262,11 +278,33 @@ def comparison(categories: List[str],
                        fontfamily='serif')
     ax.invert_yaxis()
 
-    # Add some x padding so dots aren't clipped
+    # Add x padding so dots and value labels aren't clipped
     all_vals = list(dataset_a) + list(dataset_b)
     x_min, x_max = min(all_vals), max(all_vals)
-    x_pad = (x_max - x_min) * 0.15
+    span = (x_max - x_min) if x_max > x_min else max(abs(x_max), 1)
+    x_pad = span * 0.20
     ax.set_xlim(x_min - x_pad, x_max + x_pad)
+
+    if value_labels:
+        offset = span * 0.02
+        for i in range(n):
+            a, b = dataset_a[i], dataset_b[i]
+            # Anchor each value on the outside of its dot so they don't
+            # collide with the connecting line or each other.
+            if a <= b:
+                ax.text(a - offset, y_pos[i], label_format.format(a),
+                        ha='right', va='center', fontweight='bold',
+                        fontsize=10, fontfamily='serif', color=color_a)
+                ax.text(b + offset, y_pos[i], label_format.format(b),
+                        ha='left', va='center', fontweight='bold',
+                        fontsize=10, fontfamily='serif', color=color_b)
+            else:
+                ax.text(a + offset, y_pos[i], label_format.format(a),
+                        ha='left', va='center', fontweight='bold',
+                        fontsize=10, fontfamily='serif', color=color_a)
+                ax.text(b - offset, y_pos[i], label_format.format(b),
+                        ha='right', va='center', fontweight='bold',
+                        fontsize=10, fontfamily='serif', color=color_b)
 
     if title:
         ax.set_title(title.upper(), fontsize=16, fontweight='bold',
@@ -277,7 +315,7 @@ def comparison(categories: List[str],
                 style='italic', fontfamily='serif')
 
     ax.legend(frameon=True, edgecolor='black', fancybox=False,
-              loc='lower right', fontsize=11)
+              loc='upper left', bbox_to_anchor=(1.02, 1), fontsize=11)
 
     # Du Bois style: minimal chrome
     for spine in ax.spines.values():
@@ -285,5 +323,6 @@ def comparison(categories: List[str],
     ax.tick_params(axis='both', length=0)
     ax.set_xticklabels([])
 
-    plt.tight_layout()
+    if created_fig:
+        plt.tight_layout()
     return fig, ax

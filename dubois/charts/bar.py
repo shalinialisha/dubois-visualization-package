@@ -17,9 +17,16 @@ Key Design Elements:
 
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+from matplotlib.colors import to_rgb
 import numpy as np
 from typing import List, Optional, Union, Tuple
 from dubois import colors as dubois_colors
+
+
+def _is_dark(color) -> bool:
+    """Whether a fill is dark enough that white text reads better than black."""
+    r, g, b = to_rgb(color)
+    return (0.299 * r + 0.587 * g + 0.114 * b) < 0.55
 
 
 def bar(categories: List[str],
@@ -78,7 +85,8 @@ def bar(categories: List[str],
         else:
             figsize = (max(6, n * 1.2), 6)
 
-    if ax is None:
+    created_fig = ax is None
+    if created_fig:
         fig, ax = plt.subplots(figsize=figsize)
     else:
         fig = ax.figure
@@ -97,21 +105,26 @@ def bar(categories: List[str],
         ax.invert_yaxis()
 
         if value_labels:
-            max_val = max(values) if values else 1
-            for bar_rect, val in zip(bars, values):
-                width = bar_rect.get_width()
-                if width > max_val * 0.25:
-                    ax.text(width - max_val * 0.02,
-                            bar_rect.get_y() + bar_rect.get_height() / 2,
-                            label_format.format(val),
-                            ha='right', va='center', fontweight='bold',
-                            color='white', fontsize=12, fontfamily='serif')
+            max_abs = max((abs(v) for v in values), default=1) or 1
+            for bar_rect, val, fill in zip(bars, values, colors):
+                inside = abs(val) > max_abs * 0.25
+                if inside:
+                    if val >= 0:
+                        x, ha = val - max_abs * 0.02, 'right'
+                    else:
+                        x, ha = val + max_abs * 0.02, 'left'
+                    color = 'white' if _is_dark(fill) else '#000000'
                 else:
-                    ax.text(width + max_val * 0.02,
-                            bar_rect.get_y() + bar_rect.get_height() / 2,
-                            label_format.format(val),
-                            ha='left', va='center', fontweight='bold',
-                            color='#000000', fontsize=12, fontfamily='serif')
+                    if val >= 0:
+                        x, ha = val + max_abs * 0.02, 'left'
+                    else:
+                        x, ha = val - max_abs * 0.02, 'right'
+                    color = '#000000'
+                ax.text(x,
+                        bar_rect.get_y() + bar_rect.get_height() / 2,
+                        label_format.format(val),
+                        ha=ha, va='center', fontweight='bold',
+                        color=color, fontsize=12, fontfamily='serif')
     else:
         x_pos = np.arange(n)
         bars = ax.bar(x_pos, values, width=bar_height,
@@ -122,13 +135,16 @@ def bar(categories: List[str],
                            fontsize=11, fontweight='bold', fontfamily='serif')
 
         if value_labels:
-            max_val = max(values) if values else 1
+            max_abs = max((abs(v) for v in values), default=1) or 1
             for bar_rect, val in zip(bars, values):
-                height = bar_rect.get_height()
+                if val >= 0:
+                    y, va = val + max_abs * 0.02, 'bottom'
+                else:
+                    y, va = val - max_abs * 0.02, 'top'
                 ax.text(bar_rect.get_x() + bar_rect.get_width() / 2,
-                        height + max_val * 0.02,
+                        y,
                         label_format.format(val),
-                        ha='center', va='bottom', fontweight='bold',
+                        ha='center', va=va, fontweight='bold',
                         color='#000000', fontsize=12, fontfamily='serif')
 
     if title:
@@ -148,7 +164,8 @@ def bar(categories: List[str],
     else:
         ax.set_yticklabels([])
 
-    plt.tight_layout()
+    if created_fig:
+        plt.tight_layout()
     return fig, ax
 
 
@@ -212,7 +229,8 @@ def grouped_bar(categories: List[str],
         else:
             figsize = (max(6, n_cats * 1.5), 6)
 
-    if ax is None:
+    created_fig = ax is None
+    if created_fig:
         fig, ax = plt.subplots(figsize=figsize)
     else:
         fig = ax.figure
@@ -279,7 +297,8 @@ def grouped_bar(categories: List[str],
                 ha='center', va='bottom', fontsize=11,
                 style='italic', fontfamily='serif')
 
-    ax.legend(frameon=True, edgecolor='black', fancybox=False, fontsize=11)
+    ax.legend(frameon=True, edgecolor='black', fancybox=False, fontsize=11,
+              loc='upper left', bbox_to_anchor=(1.02, 1))
     # Du Bois style: remove all chart chrome
     for spine in ax.spines.values():
         spine.set_visible(False)
@@ -289,7 +308,8 @@ def grouped_bar(categories: List[str],
     else:
         ax.set_yticklabels([])
 
-    plt.tight_layout()
+    if created_fig:
+        plt.tight_layout()
     return fig, ax
 
 
@@ -356,7 +376,8 @@ def stacked_bar(categories: List[str],
         else:
             figsize = (max(6, n_cats * 1.2), 6)
 
-    if ax is None:
+    created_fig = ax is None
+    if created_fig:
         fig, ax = plt.subplots(figsize=figsize)
     else:
         fig = ax.figure
@@ -367,8 +388,16 @@ def stacked_bar(categories: List[str],
     y_pos = np.arange(n_cats)
     cumulative = np.zeros(n_cats)
 
+    # Width threshold: don't try to label segments smaller than ~4% of the
+    # widest stack — they'll just collide with neighbors. Legend identifies them.
+    stack_totals = np.sum(
+        np.array([list(v) for v in groups.values()], dtype=float), axis=0)
+    total_max = float(np.max(stack_totals)) if len(stack_totals) else 1.0
+    label_threshold = total_max * 0.04
+
     for i, (group_name, vals) in enumerate(groups.items()):
         vals = np.array(vals, dtype=float)
+        text_color = 'white' if _is_dark(colors[i]) else '#000000'
 
         if orientation == 'horizontal':
             bars = ax.barh(y_pos, vals, left=cumulative, height=bar_height,
@@ -376,12 +405,12 @@ def stacked_bar(categories: List[str],
                            linewidth=line_width, label=group_name, **kwargs)
             if value_labels:
                 for bar_rect, val in zip(bars, vals):
-                    if val > 0:
+                    if val > label_threshold:
                         cx = bar_rect.get_x() + bar_rect.get_width() / 2
                         cy = bar_rect.get_y() + bar_rect.get_height() / 2
                         ax.text(cx, cy, label_format.format(val),
                                 ha='center', va='center', fontweight='bold',
-                                color='white' if val > 8 else '#000000',
+                                color=text_color,
                                 fontsize=11, fontfamily='serif')
         else:
             bars = ax.bar(y_pos, vals, bottom=cumulative, width=bar_height,
@@ -389,12 +418,12 @@ def stacked_bar(categories: List[str],
                           linewidth=line_width, label=group_name, **kwargs)
             if value_labels:
                 for bar_rect, val in zip(bars, vals):
-                    if val > 0:
+                    if val > label_threshold:
                         cx = bar_rect.get_x() + bar_rect.get_width() / 2
                         cy = bar_rect.get_y() + bar_rect.get_height() / 2
                         ax.text(cx, cy, label_format.format(val),
                                 ha='center', va='center', fontweight='bold',
-                                color='white' if val > 8 else '#000000',
+                                color=text_color,
                                 fontsize=11, fontfamily='serif')
 
         cumulative += vals
@@ -430,7 +459,8 @@ def stacked_bar(categories: List[str],
                 ha='center', va='bottom', fontsize=11,
                 style='italic', fontfamily='serif')
 
-    ax.legend(frameon=True, edgecolor='black', fancybox=False, fontsize=11)
+    ax.legend(frameon=True, edgecolor='black', fancybox=False, fontsize=11,
+              loc='upper left', bbox_to_anchor=(1.02, 1))
     # Du Bois style: remove all chart chrome
     for spine in ax.spines.values():
         spine.set_visible(False)
@@ -440,5 +470,6 @@ def stacked_bar(categories: List[str],
     else:
         ax.set_yticklabels([])
 
-    plt.tight_layout()
+    if created_fig:
+        plt.tight_layout()
     return fig, ax

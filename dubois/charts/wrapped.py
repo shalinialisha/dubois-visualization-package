@@ -131,10 +131,12 @@ def wrapped_bar(categories: List[str],
     if figsize is None:
         figsize = (10, 10)
 
-    if ax is None:
+    created_fig = ax is None
+    if created_fig:
         fig, ax = plt.subplots(figsize=figsize, subplot_kw={'aspect': 'equal'})
     else:
         fig = ax.figure
+        ax.set_aspect('equal')
 
     total = sum(values)
     total_theta = 360.0 * n_wraps
@@ -168,9 +170,12 @@ def wrapped_bar(categories: List[str],
             text_angle += 180
             ha = 'right'
 
-        # Only place curved labels for segments large enough to read
+        # Only place curved labels for segments large enough to read.
+        # Restrict to the outer band of the spiral — long text on inner
+        # wraps can cross outer rings, which is unreadable.
         abs_seg = abs(seg_theta)
-        if show_inline_labels and abs_seg > 25:
+        on_outer_band = mid_r > (r_outer + r_inner) / 2
+        if show_inline_labels and abs_seg > 25 and on_outer_band:
             # Place label outside the bar
             label_r = mid_r + bar_width / 2 + 0.08
             lx = label_r * np.cos(label_angle_rad)
@@ -226,7 +231,8 @@ def wrapped_bar(categories: List[str],
                 ha='center', va='bottom', fontsize=11,
                 style='italic', fontfamily='serif')
 
-    plt.tight_layout()
+    if created_fig:
+        plt.tight_layout()
     return fig, ax
 
 
@@ -281,7 +287,8 @@ def snake_bar(categories: List[str],
     if figsize is None:
         figsize = (12, max(4, n_cats * (bar_height + row_gap) + 1.5))
 
-    if ax is None:
+    created_fig = ax is None
+    if created_fig:
         fig, ax = plt.subplots(figsize=figsize)
     else:
         fig = ax.figure
@@ -342,7 +349,8 @@ def snake_bar(categories: List[str],
                        linewidth=1, label=name)
         for j, name in enumerate(seg_names)
     ]
-    ax.legend(handles=legend_elements, loc='lower right',
+    ax.legend(handles=legend_elements,
+              loc='upper left', bbox_to_anchor=(1.02, 1),
               frameon=True, edgecolor='black', fancybox=False,
               fontsize=11)
 
@@ -354,5 +362,6 @@ def snake_bar(categories: List[str],
                 ha='center', va='bottom', fontsize=11,
                 style='italic', fontfamily='serif')
 
-    plt.tight_layout()
+    if created_fig:
+        plt.tight_layout()
     return fig, ax
