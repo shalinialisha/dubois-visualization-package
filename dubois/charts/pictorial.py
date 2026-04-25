@@ -110,10 +110,12 @@ def icon_grid(groups: Dict[str, float],
         h = nrows * (cell_size + cell_gap) + 2
         figsize = (w, h)
 
-    if ax is None:
+    created_fig = ax is None
+    if created_fig:
         fig, ax = plt.subplots(figsize=figsize, subplot_kw={'aspect': 'equal'})
     else:
         fig = ax.figure
+        ax.set_aspect('equal')
 
     # Draw grid cells (top-to-bottom, left-to-right)
     for idx in range(total):
@@ -165,7 +167,8 @@ def icon_grid(groups: Dict[str, float],
                   frameon=True, edgecolor='black', fancybox=False,
                   fontsize=10, ncol=n_groups)
 
-    plt.tight_layout()
+    if created_fig:
+        plt.tight_layout()
     return fig, ax
 
 
@@ -230,7 +233,8 @@ def pictograph_row(groups: Dict[str, float],
     if figsize is None:
         figsize = (14, 3)
 
-    if ax is None:
+    created_fig = ax is None
+    if created_fig:
         fig, ax = plt.subplots(figsize=figsize)
     else:
         fig = ax.figure
@@ -332,5 +336,6 @@ def pictograph_row(groups: Dict[str, float],
                 ha='center', va='bottom', fontsize=11,
                 style='italic', fontfamily='serif')
 
-    plt.tight_layout()
+    if created_fig:
+        plt.tight_layout()
     return fig, ax

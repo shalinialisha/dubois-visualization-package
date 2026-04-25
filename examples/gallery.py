@@ -69,7 +69,7 @@ def plate_25_occupations():
         left_label='Negroes',
         right_label='Whites',
         left_color=dubois.colors.crimson,
-        right_color=dubois.colors.DUBOIS_EXTENDED['blue'],
+        right_color=dubois.colors.black,
         title='Occupations of Negroes and Whites in Georgia',
         label_format='{:.0f}%',
     )

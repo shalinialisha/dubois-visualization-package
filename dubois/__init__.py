@@ -8,15 +8,19 @@ groundbreaking data portraits from the 1900 Paris Exposition.
 Quick Start
 -----------
 >>> import dubois
->>> 
+>>>
 >>> # Use Du Bois colors
 >>> dubois.colors.crimson
->>> 
+>>>
 >>> # Apply Du Bois theme to matplotlib
 >>> dubois.set_theme()
->>> 
+>>>
 >>> # Get a color palette
 >>> palette = dubois.colors.get_categorical(4)
+>>>
+>>> # Build a Du Bois-style chart
+>>> from dubois.charts import bar
+>>> fig, ax = bar.bar(['A', 'B', 'C'], [10, 20, 30], title='Demo')
 
 Modules
 -------
@@ -24,6 +28,12 @@ colors
     Color palettes and color utilities
 themes
     Matplotlib style themes inspired by Du Bois
+charts
+    Specialized chart types: bar, area, butterfly, spiral, wrapped, pictorial
+typography
+    Title blocks, annotations, source notes, plate numbering
+layouts
+    Multi-panel plate composition (DuBoisPlate)
 
 Historical Context
 ------------------
