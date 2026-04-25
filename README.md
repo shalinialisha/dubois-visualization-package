@@ -1,6 +1,12 @@
-# dubois-viz
+# dubois-visualizations
 
 **Bring your data to life with the bold, hand-painted style of W.E.B. Du Bois' 1900 Paris Exposition charts.**
+
+## Historical Context
+
+In 1900, W.E.B. Du Bois and his team at Atlanta University created 63 innovative hand-painted data visualizations for the "Exposition Universelle" in Paris. The visualizations were revolutionary in their use of creative chart types (spirals, wrapped bars, butterfly charts), compelling visual narratives, and modernist design principles decades before the modernist movement. To me they represent the power of marginalized peoples when we are able to contribute to humanity. These charts were made 35 years post-emancipation and are an additon to Du Bois' incredible achivements. 
+
+This package helps you create matplotlib visualizations that capture the spirit and aesthetic of Du Bois' original works.
 
 ![Five sectors of the U.S. economy from 1900 to 1960, in deep crimson, gold, green, blue, and pink](docs/images/gallery/area_5_groups.png)
 
@@ -73,18 +79,6 @@ A 7-point survey scale (Excellent → Very Poor) shown as a single proportional 
 ![Likert scale results as one proportional strip](docs/images/gallery/pictorial_row_7segs.png)
 
 ---
-
-## Historical Context
-
-In 1900, W.E.B. Du Bois and his team at Atlanta University created 63 innovative hand-painted data visualizations for the "Exposition Universelle" in Paris. These charts challenged racist assumptions and powerfully demonstrated African American progress in the 35 years since emancipation. The visualizations were revolutionary in their use of:
-    
-- Bold, saturated colors from a limited palette
-- Creative chart types (spirals, wrapped bars, butterfly charts)
-- Compelling visual narratives
-- Hand-crafted aesthetic with visible brushstrokes
-- Modernist design principles decades before the modernist movement
-
-This package helps you create matplotlib visualizations that capture the spirit and aesthetic of Du Bois' original works.
 
 ## Installation
 
